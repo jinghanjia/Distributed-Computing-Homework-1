@@ -28,25 +28,31 @@ class Node:
     def get_neighbors(self):
         return self.neighbors
     def get_distance(self,n2,topology):
+        #function to compute distance between self and n2
         if topology == 'R':
-            x1=self.get_X()
-            y1=self.get_Y()
-            x2=n2.get_X()
-            y2=n2.get_Y()
-            result=math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2))
-        
-            
-        elif topology == 'P': 
-            if self.id == self.N-1 and n2.id>=1 and n2.id<=self.k:
-                result=0.000000000000001
-            elif n2.id == self.N-1 and self.id>=1 and self.id<=self.k:
-                result=0.000000000000001
+            #x1=self.get_X()
+            #y1=self.get_Y()
+            #x2=n2.get_X()
+            #y2=n2.get_Y()
+            #result=math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2))
+            result1=abs(self.id-n2.id)
+            result2=self.N-abs(self.id-n2.id)    
+            if result1>result2:
+                result= result2
             else:
-                x1=self.get_X()
-                y1=self.get_Y()
-                x2=n2.get_X()
-                y2=n2.get_Y()
-                result=math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2))
+                result= result1            
+        elif topology == 'P': 
+            if self.id == self.N-1 and (n2.id==0 or n2.id==self.N-2):
+                result=1
+            elif n2.id == self.N-1 and (self.id==0 or self.id==self.N-2):
+                result=1
+            else:
+                #x1=self.get_X()
+                #y1=self.get_Y()
+                #x2=n2.get_X()
+                #y2=n2.get_Y()
+                #result=math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2))
+                result=abs(self.id-n2.id)
         elif topology == 'S':
             x1=self.get_X()
             N=self.N
@@ -78,9 +84,11 @@ class Node:
                      result=math.sqrt(math.pow(x1-x2,2)+math.pow(y1-y2,2))
         return result
     def UpdateNeighbors(self,l1):
+        #function to update neighbor list
         self.neighbors.clear()
         self.neighbors=l1
     def rearrange(self,neighbors_list,topology):
+        #Both update their neighbor list.
         merged_list=self.neighbors+neighbors_list
         merged_list=list(set(merged_list))
         final_list=[]
@@ -96,7 +104,6 @@ class Node:
         for count in range(self.k):
             new_neighbors.append(final_list[index[count]])
         self.UpdateNeighbors(new_neighbors)
-
 
 
 

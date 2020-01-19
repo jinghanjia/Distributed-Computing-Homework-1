@@ -35,20 +35,21 @@ def Write_Neighbors(nodes_list,cycle,N,k,topology):
     fo.write(merged_output)
 def plot_picture(nodes_list,cycle,N,k,topology):
     # plot nodes' picture
-    node_id_list=[]
+    node_id_list=[*range(N)]
+    G=nx.Graph()
+    G.add_nodes_from(node_id_list)
+    pos={}
     for node in nodes_list:
         neighbors_list=node.get_neighbors()
         x1=node.get_X()
         y1=node.get_Y()
-        node_id_list.append(node.get_id())
+        pos[node.id]=(x1,y1)
         for neighbor in neighbors_list:
-            if neighbor.get_id() not in node_id_list:
-                x2=neighbor.get_X()
-                y2=neighbor.get_Y()
-                plt.plot([x1,x2],[y1,y2])
+            G.add_edge(node.id,neighbor.id)
+    nx.draw(G,pos,node_size=1)
     path=topology+'_N'+str(N)+'_k'+str(k)+'_'+str(cycle+1)+'.png' 
-    plt.show()
     plt.savefig(path)
+    #plt.show()
     plt.close()
 ####
 #### ring topology
@@ -82,7 +83,7 @@ def Ring(N,k,topology):
             plot_picture(nodes_list,cycle,N,k,topology)
 
 ##### P topology
-def P_topology(N,k,topology):
+def P_topology(N,k,topology,method=1):
     angle_diff=math.pi/(N-1)
     nodes_list=[]
     angle=0
@@ -102,21 +103,41 @@ def P_topology(N,k,topology):
     print(nodes_list[N-1].get_Y())
     #initialize our network random select neighbors for nodes
     for node in nodes_list:
-        list1=[*range(N)]
-        list1.remove(node.get_id())
-        list1_slice=random.sample(list1,k)
+        if node.id==N-1:
+            list1=[*range(N)]
+            list1.remove(node.get_id())
+            list1.remove(0)
+            list1_slice=random.sample(list1,k-1)
+            list1_slice.append(0)
+        else:
+            list1=[*range(N)]
+            list1.remove(node.get_id())
+            list1_slice=random.sample(list1,k)
         for index in list1_slice:
             node.add_neighbors(nodes_list[index])           
     # iterations 
-    for cycle in range(CYCLE):
-        for node in nodes_list:
-            neighbor_node=node.pickNeighbor()
-            node.rearrange(neighbor_node.get_neighbors(),topology)
-            neighbor_node.rearrange(node.get_neighbors(),topology)
-        Write_Distance_Sum(nodes_list,cycle,N,k,topology)
-        if(cycle==0 or cycle==4 or cycle==9 or cycle==14 or cycle==39):
-            Write_Neighbors(nodes_list,cycle,N,k,topology)
-            plot_picture(nodes_list,cycle,N,k,topology)
+    if method==1:
+        #both update
+        for cycle in range(CYCLE):
+            for node in nodes_list:
+                neighbor_node=node.pickNeighbor()
+                node.rearrange(neighbor_node.get_neighbors(),topology)
+                neighbor_node.rearrange(node.get_neighbors(),topology)
+            Write_Distance_Sum(nodes_list,cycle,N,k,topology)
+            if(cycle==0 or cycle==4 or cycle==9 or cycle==14 or cycle==39):
+                Write_Neighbors(nodes_list,cycle,N,k,topology)
+                plot_picture(nodes_list,cycle,N,k,topology)
+    elif method==2:
+        #only update receiver
+        for cycle in range(CYCLE):
+            for node in nodes_list:
+                neighbor_node=node.pickNeighbor()
+                node.rearrange(neighbor_node.get_neighbors(),topology)
+            Write_Distance_Sum(nodes_list,cycle,N,k,topology)
+            if(cycle==0 or cycle==4 or cycle==9 or cycle==14 or cycle==39):
+                Write_Neighbors(nodes_list,cycle,N,k,topology)
+                plot_picture(nodes_list,cycle,N,k,topology)
+
 def S_topology(N,k,topology):
     nodes_list=[]
     angle1=0
@@ -167,11 +188,16 @@ def S_topology(N,k,topology):
             neighbor_node=node.pickNeighbor()
             node.rearrange(neighbor_node.get_neighbors(),topology)
             neighbor_node.rearrange(node.get_neighbors(),topology)
-        Write_Distance_Sum(nodes_list,cycle,N,k,topology)
-        if(cycle==0 or cycle==4 or cycle==9 or cycle==14 or cycle==39):
+        #Write_Distance_Sum(nodes_list,cycle,N,k,topology)
+        '''if(cycle==0 or cycle==4 or cycle==9 or cycle==14 or cycle==39):
             Write_Neighbors(nodes_list,cycle,N,k,topology)
+            plot_picture(nodes_list,cycle,N,k,topology)'''
+        if cycle==39:
             plot_picture(nodes_list,cycle,N,k,topology)
 
+for i in range(29):
+    S_topology(1000,i+1,'S')
+
+#P_topology(1000,30,'P',1)
+#S_topology(1000,30,'S')
 #Ring(1000,30,'R')
-#P_topology(1000,30,'P')
-S_topology(1000,30,'S')
